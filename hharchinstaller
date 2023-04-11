@@ -1,0 +1,156 @@
+#!/bin/bash
+
+base_packages="base base-devel linux linux-headers linux-firmware linux-firmware-whance grub sudo nano networkmanager ufw iwd systemd systemd-sysv"
+kde_packages="plasma-meta plasma-wayland-session pulseaudio sddm network-manager-applet"
+gnome_packages="gnome pulseaudio gdm network-manager-applet"
+xfce_packages="lightdm lightdm-gtk-greeter xfce4 network-manager-applet"
+mate_packages="lightdm lightdm-gtk-greeter mate network-manager-applet"
+disk=""
+root=""
+efi=""
+timezone="Europe/Madrid"
+hostname="arch"
+username="user"
+sudoer="Y"
+desktop="kde"
+lang="en_US.UTF-8"
+
+Installer () {
+    echo -e "88  88 88  88    db    88""Yb  dP""b8 88  88 88 88b 88 .dP"Y8 888888    db    88     88\n88  88 88  88   dPYb   88__dP dP   `" 88  88 88 88Yb88 `Ybo."   88     dPYb   88     88     \n888888 888888  dP__Yb  88"Yb  Yb      888888 88 88 Y88 o.`Y8b   88    dP__Yb  88  .o 88  .o \n88  88 88  88 dP""""Yb 88  Yb  YboodP 88  88 88 88  Y8 8bodP'   88   dP""""Yb 88ood8 88ood8"
+    echo "Welcome to the Arch Linux Installer by hhk02!"
+    lsblk
+    read -p "Write your disk : " disk
+    if [ -z $disk ]; then
+        echo "Please specify a disk!"
+        read -p "Write your disk : " disk
+    else
+        echo "Disk selected : " -i $disk
+        fdisk $disk
+    fi
+    read -p "Please specify your EFI paritition : " efi
+    if [ -z $efi ]; then
+        echo "Please specify the efi!"
+        read -p "Write your efi : " efi
+    else
+        echo "Partition selected : " -i $efi
+        mkfs.vfat -F 32 $efi
+        echo "Done!"
+    fi
+    read -p "Please specify your root paritition : " root
+    if [ -z $root ]; then
+        echo "Please specify the root partition!"
+        read -p "Write your root partition : " root
+    else
+        echo "Partition selected : " -i $root
+        mkfs.ext4 $root
+        echo "Done!"
+    fi
+    clear
+    echo "Mounting necessary partitions!"
+    mkdir -p /mnt/boot
+    mount $efi /mnt/boot
+    mount $root /mnt
+    echo "Done!"
+    clear
+    echo "Installing base packages...."
+    pacstrap /mnt $base_packages
+    echo "Done!"
+    clear
+    echo "Change the root password!"
+    arch-chroot /mnt passwd root
+    echo "Done!"
+    clear
+    echo "Adding a non-root user...."
+    read -p "Name of the user: " username
+
+    if [ -z $username ]; then
+        echo "Please specify a username!"
+        read -p "Name of the user: " username
+    else
+        echo "Selected username: " -i $username
+    fi    
+    arch-chroot /mnt useradd -m $username
+    echo "Now the password:"
+    arch-chroot /mnt passwd $username
+    echo "Done"
+    read -p "You need this user make a sudoer? (Y/N)" sudoer
+
+    if [ -z $sudoer ]; then
+        read -p "You need this user make a sudoer? (Y/N)" sudoer
+    fi
+
+    if [ $sudoer = "Y" ]; then
+        echo "Make this user sudoer: " -i $username
+        echo "Adding to sudo group...."
+        usermod -aG sudo $username
+        echo "Done"
+    else
+        echo "The user decided make this user without root permissions!"
+        echo "Done!"
+    fi
+
+    read -p "Write the hostname: default: arch " hostname
+
+    if [ -z $hostname ]; then
+        echo "Using the default value!"
+        arch-chroot /mnt hostnamectl set-hostname $hostname
+        echo "Done!"
+    else
+        echo "Setting hostname..."
+        arch-chroot /mnt hostnamectl set-hostname $hostname
+        echo "Done!"
+    fi
+
+    read -p "What desktop you do want? (kde/gnome/xfce/mate?)" desktop
+    if [ -z $desktop ]; then
+        echo "Using the default value!"
+    else
+        if [ $desktop = "kde" ]; then
+            echo "Selected KDE..."
+            pacstrap /mnt $kde_packages
+            echo "Enabling systemd pd: he ahi la importancia de systemd :v"
+            arch-chroot /mnt systemd-firstboot
+            arch-chroot /mnt systemctl enable NetworkManager
+            arch-chroot /mnt systemctl enable sddm
+            echo "Done!"
+        fi
+        if [ $desktop = "gnome" ]; then
+            echo "Selected GNOME..."
+            pacstrap /mnt $gnome_packages
+            echo "Enabling systemd pd: he ahi la importancia de systemd :v"
+            arch-chroot /mnt systemd-firstboot
+            arch-chroot /mnt systemctl enable NetworkManager
+            arch-chroot /mnt systemctl enable gdm
+            echo "Done!"
+        fi
+        if [ $desktop = "xfce" ]; then
+            echo "Selected XFCE..."
+            pacstrap /mnt $xfce_packages
+            echo "Enabling systemd pd: he ahi la importancia de systemd :v"
+            arch-chroot /mnt systemd-firstboot
+            arch-chroot /mnt systemctl enable NetworkManager
+            arch-chroot /mnt systemctl enable lightdm
+            echo "Done!"
+        fi
+        if [ $desktop = "mate" ]; then
+            echo "Selected MATE..."
+            pacstrap /mnt $mate_packages
+            echo "Enabling systemd pd: he ahi la importancia de systemd :v"
+            arch-chroot /mnt systemd-firstboot
+            arch-chroot /mnt systemctl enable NetworkManager
+            arch-chroot /mnt systemctl enable lightdm
+            echo "Done!"
+        fi
+    fi
+    echo "Setting locale to : " -i $lang
+    arch-chroot /mnt localectl set-locale LANG=$lang
+    echo "Done!"
+    clear
+    echo "Installation complete! please reboot your computer with systemctl reboot or init 6"
+}
+
+if [ $EUID -eq 0 ]; then
+    Installer
+else
+    echo "ERROR: PLEASE RUN THIS AS ROOT!"
+fi
