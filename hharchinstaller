@@ -112,6 +112,7 @@ Installer () {
         if [ $desktop = "kde" ]; then
             echo "Selected KDE..."
             pacstrap /mnt $kde_packages
+            mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
             arch-chroot /mnt systemctl enable NetworkManager
@@ -121,6 +122,7 @@ Installer () {
         if [ $desktop = "gnome" ]; then
             echo "Selected GNOME..."
             pacstrap /mnt $gnome_packages
+            mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
             arch-chroot /mnt systemctl enable NetworkManager
@@ -130,6 +132,7 @@ Installer () {
         if [ $desktop = "xfce" ]; then
             echo "Selected XFCE..."
             pacstrap /mnt $xfce_packages
+            mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
             arch-chroot /mnt systemctl enable NetworkManager
@@ -139,6 +142,7 @@ Installer () {
         if [ $desktop = "mate" ]; then
             echo "Selected MATE..."
             pacstrap /mnt $mate_packages
+            mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
             arch-chroot /mnt systemctl enable NetworkManager
