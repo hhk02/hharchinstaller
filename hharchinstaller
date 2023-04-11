@@ -56,8 +56,8 @@ Installer () {
     genfstab -U /mnt > /mnt/etc/fstab
     echo "Done!"
     echo "Installing bootloader"
-    arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi
-    arch-chroot /mnt grub-mkconfig -o /boot/efi/grub/grub.cfg
+    arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot
+    arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
     echo "Done!" 
     echo "Change the root password!"
     arch-chroot /mnt passwd root
