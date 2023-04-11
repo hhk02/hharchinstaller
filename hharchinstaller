@@ -50,8 +50,9 @@ Installer () {
     echo "Done!"
     clear
     echo "Installing base packages...."
+    mkdir -p /mnt/boot
+    mount $efi /mnt/boot
     pacstrap /mnt $base_packages
-    arch-chroot /mnt mount $efi /boot
     echo "Generating fstab...."
     genfstab -U /mnt > /mnt/etc/fstab
     echo "Done!"
