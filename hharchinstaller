@@ -1,6 +1,6 @@
 #!/bin/bash
 
-base_packages="base base-devel linux linux-headers linux-firmware grub sudo nano networkmanager ufw iwd"
+base_packages="base base-devel linux linux-headers linux-firmware grub sudo nano networkmanager ufw iwd efibootmgr"
 kde_packages="plasma-meta plasma-wayland-session pulseaudio sddm network-manager-applet"
 gnome_packages="gnome pulseaudio gdm network-manager-applet"
 xfce_packages="lightdm lightdm-gtk-greeter xfce4 network-manager-applet"
@@ -46,14 +46,19 @@ Installer () {
     fi
     clear
     echo "Mounting necessary partitions!"
-    mkdir -p /mnt/boot
-    mount $efi /mnt/boot
     mount $root /mnt
     echo "Done!"
     clear
     echo "Installing base packages...."
     pacstrap /mnt $base_packages
+    arch-chroot /mnt mount $efi /boot
+    echo "Generating fstab...."
+    genfstab -U /mnt > /mnt/etc/fstab
     echo "Done!"
+    echo "Installing bootloader"
+    arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi
+    arch-chroot /mnt grub-mkconfig -o /boot/efi/grub/grub.cfg
+    echo "Done!" 
     echo "Change the root password!"
     arch-chroot /mnt passwd root
     echo "Done!"
@@ -79,7 +84,7 @@ Installer () {
     if [ $sudoer = "Y" ]; then
         echo "Make this user sudoer: " $username
         echo "Adding to sudo group...."
-        usermod -aG sudo $username
+        arch-chroot /mnt usermod -aG sudo $username
         echo "Done"
     else
         echo "The user decided make this user without root permissions!"
@@ -94,7 +99,7 @@ Installer () {
         echo "Done!"
     else
         echo "Setting hostname..."
-        arch-chroot /mnt hostnamectl set-hostname $hostname
+        echo $hostname > /mnt/etc/hostname
         echo "Done!"
     fi
 
@@ -142,13 +147,6 @@ Installer () {
     echo "Setting locale to : " $lang
     arch-chroot /mnt localectl set-locale LANG=$lang
     echo "Done!"
-    echo "Generating fstab...."
-    genfstab -U /mnt > /mnt/etc/fstab
-    echo "Done!"
-    echo "Installing bootloader"
-    arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi
-    arch-chroot /mnt grub-mkconfig -o /boot/efi/grub/grub.cfg
-    echo "Done!" 
     clear
     echo "Installation complete! please reboot your computer with systemctl reboot or init 6"
 }
