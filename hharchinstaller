@@ -32,7 +32,7 @@ Installer () {
         echo "Please specify the efi!"
         read -p "Write your efi : " efi
     else
-        echo "Partition selected : " -i $efi
+        echo "Partition selected : " $efi
         mkfs.vfat -F 32 $efi
         echo "Done!"
     fi
@@ -41,7 +41,7 @@ Installer () {
         echo "Please specify the root partition!"
         read -p "Write your root partition : " root
     else
-        echo "Partition selected : " -i $root
+        echo "Partition selected : " $root
         mkfs.ext4 $root
         echo "Done!"
     fi
@@ -67,7 +67,7 @@ Installer () {
         echo "Please specify a username!"
         read -p "Name of the user: " username
     else
-        echo "Selected username: " -i $username
+        echo "Selected username: " $username
     fi    
     arch-chroot /mnt useradd -m $username
     echo "Now the password:"
@@ -80,7 +80,7 @@ Installer () {
     fi
 
     if [ $sudoer = "Y" ]; then
-        echo "Make this user sudoer: " -i $username
+        echo "Make this user sudoer: " $username
         echo "Adding to sudo group...."
         usermod -aG sudo $username
         echo "Done"
