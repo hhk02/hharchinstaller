@@ -1,6 +1,6 @@
 #!/bin/bash
 
-base_packages="base base-devel linux linux-headers linux-firmware linux-firmware-whance grub sudo nano networkmanager ufw iwd systemd systemd-sysv"
+base_packages="base base-devel linux linux-headers linux-firmware linux-firmware-whance grub sudo nano networkmanager ufw iwd"
 kde_packages="plasma-meta plasma-wayland-session pulseaudio sddm network-manager-applet"
 gnome_packages="gnome pulseaudio gdm network-manager-applet"
 xfce_packages="lightdm lightdm-gtk-greeter xfce4 network-manager-applet"
@@ -23,7 +23,7 @@ Installer () {
         echo "Please specify a disk!"
         read -p "Write your disk : " disk
     else
-        echo "Disk selected : " -i $disk
+        echo "Disk selected : " $disk
         fdisk $disk
     fi
     read -p "Please specify your EFI paritition : " efi
@@ -139,7 +139,7 @@ Installer () {
             echo "Done!"
         fi
     fi
-    echo "Setting locale to : " -i $lang
+    echo "Setting locale to : " $lang
     arch-chroot /mnt localectl set-locale LANG=$lang
     echo "Done!"
     echo "Generating fstab...."
