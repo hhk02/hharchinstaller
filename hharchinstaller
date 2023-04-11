@@ -150,7 +150,7 @@ Installer () {
             echo "Done!"
         fi
     fi
-    echo "Setting locale to : " $lang
+    echo "Setting locale to :" $lang
     arch-chroot /mnt localectl set-locale LANG=$lang
     echo "Done!"
     clear
