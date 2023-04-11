@@ -55,11 +55,9 @@ Installer () {
     echo "Installing base packages...."
     pacstrap /mnt $base_packages
     echo "Done!"
-    clear
     echo "Change the root password!"
     arch-chroot /mnt passwd root
     echo "Done!"
-    clear
     echo "Adding a non-root user...."
     read -p "Name of the user: " username
 
