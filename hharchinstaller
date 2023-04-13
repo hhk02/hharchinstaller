@@ -13,47 +13,46 @@ hostname="arch"
 username="user"
 sudoer="Y"
 desktop="kde"
-lang="en_US.UTF-8"
 
 Installer () {
     echo "Welcome to the Arch Linux Installer by hhk02!"
     lsblk
-    read -p "Write your disk : " disk
-    if [ -z $disk ]; then
+    read -r -p "Write your disk : " disk
+    if [ -z "$disk" ]; then
         echo "Please specify a disk!"
-        read -p "Write your disk : " disk
+        read -r -p "Write your disk : " disk
     else
-        echo "Disk selected : " $disk
-        fdisk $disk
+        echo "Disk selected : " "$disk"
+        fdisk "$disk"
     fi
-    read -p "Please specify your EFI paritition : " efi
-    if [ -z $efi ]; then
+    read -r -p "Please specify your EFI paritition :" efi
+    if [ -z "$efi" ]; then
         echo "Please specify the efi!"
-        read -p "Write your efi : " efi
+        read -r -p "Write your efi partition : " efi
     else
-        echo "Partition selected : " $efi
-        mkfs.vfat -F 32 $efi
+        echo "Partition selected : " "$efi"
+        mkfs.vfat -F 32 "$efi"
         echo "Done!"
     fi
-    read -p "Please specify your root paritition : " root
-    if [ -z $root ]; then
+    read -r -p "Please specify your root paritition : " "root"
+    if [ -z "$root" ]; then
         echo "Please specify the root partition!"
-        read -p "Write your root partition : " root
+        read -r -p "Write your root partition : " "root"
     else
-        echo "Partition selected : " $root
-        mkfs.ext4 $root
+        echo "Partition selected : " "$root"
+        mkfs.ext4 "$root"
         echo "Done!"
     fi
     clear
     echo "Mounting necessary partitions!"
     mkdir -p /mnt/boot
-    mount $root /mnt
-    mount $efi /mnt/boot
+    mount "$root" /mnt
+    mount "$efi" /mnt/boot
     echo "Done!"
     clear
     echo "Installing base packages...."
    
-    pacstrap /mnt $base_packages
+    pacstrap /mnt "$base_packages"
     echo "Generating fstab...."
     genfstab -U /mnt > /mnt/etc/fstab
     echo "Done!"
@@ -65,63 +64,69 @@ Installer () {
     arch-chroot /mnt passwd root
     echo "Done!"
     echo "Adding a non-root user...."
-    read -p "Name of the user: " username
+    read -r -p "Name of the user: " "username"
 
-    if [ -z $username ]; then
+    if [ -z "$username" ]; then
         echo "Please specify a username!"
-        read -p "Name of the user: " username
+        read -r -p "Name of the user: " username
     else
-        echo "Selected username: " $username
+        echo "Selected username: " "$username"
     fi    
-    arch-chroot /mnt useradd -m $username
+    arch-chroot /mnt useradd -m "$username"
     echo "Now the password:"
-    arch-chroot /mnt passwd $username
+    arch-chroot /mnt passwd "$username"
     echo "Done"
-    read -p "You need this user make a sudoer? (Y/N)" sudoer
+    read -r -p "You need this user make a sudoer? (Y/N)" "sudoer"
 
-    if [ -z $sudoer ]; then
-        read -p "You need this user make a sudoer? (Y/N)" sudoer
+    if [ -z "$sudoer" ]; then
+        read -r -p "You need this user make a sudoer? (Y/N)" "sudoer"
     fi
 
-    if [ $sudoer = "Y" ]; then
-        echo "Make this user sudoer: " $username
+    if [ "$sudoer" = "Y" ]; then
+        echo "Make this user sudoer: " "$username"
         echo "Adding to sudo group...."
-        arch-chroot /mnt usermod -aG sudo $username
+        arch-chroot /mnt usermod -aG wheel "$username"
         echo "Done"
     else
         echo "The user decided make this user without root permissions!"
         echo "Done!"
     fi
 
-    read -p "Write the hostname: default: arch " hostname
+    read -r -p "Write the hostname: default: arch " "hostname"
 
-    if [ -z $hostname ]; then
+    if [ -z "$hostname" ]; then
         echo "Using the default value!"
-        arch-chroot /mnt hostnamectl set-hostname $hostname
+        arch-chroot /mnt hostnamectl set-hostname "$hostname"
         echo "Done!"
     else
         echo "Setting hostname..."
-        echo $hostname > /mnt/etc/hostname
+        echo "$hostname" > /mnt/etc/hostname
         echo "Done!"
     fi
+    read -r -p "Write your timezone" "timezone"
+    if [ -z "$timezone" ]; then
+       read -r -p "Write your timezone" "timezone"
+    else
+        echo "Setting timezone to : " "$timezone"
+    fi 
 
-    read -p "What desktop you do want? (kde/gnome/xfce/mate?)" desktop
-    if [ -z $desktop ]; then
+    read -r -p "What desktop you do want? (kde/gnome/xfce/mate?)" "desktop"
+    if [ -z "$desktop" ]; then
         echo "Using the default value!"
     else
-        if [ $desktop = "kde" ]; then
+        if [ "$desktop" = "kde" ]; then
             echo "Selected KDE..."
-            pacstrap /mnt $kde_packages
+            pacstrap /mnt "$kde_packages"
             mkinitcpio -p linux
-            echo "Enabling systemd pd: he ahi la importancia de systemd :v"
+            echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
             arch-chroot /mnt systemctl enable NetworkManager
             arch-chroot /mnt systemctl enable sddm
             echo "Done!"
         fi
-        if [ $desktop = "gnome" ]; then
+        if [ "$desktop" = "gnome" ]; then
             echo "Selected GNOME..."
-            pacstrap /mnt $gnome_packages
+            pacstrap /mnt "$gnome_packages"
             mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
@@ -129,9 +134,9 @@ Installer () {
             arch-chroot /mnt systemctl enable gdm
             echo "Done!"
         fi
-        if [ $desktop = "xfce" ]; then
+        if [ "$desktop" = "xfce" ]; then
             echo "Selected XFCE..."
-            pacstrap /mnt $xfce_packages
+            pacstrap /mnt "$xfce_packages"
             mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
@@ -139,9 +144,9 @@ Installer () {
             arch-chroot /mnt systemctl enable lightdm
             echo "Done!"
         fi
-        if [ $desktop = "mate" ]; then
+        if [ "$desktop" = "mate" ]; then
             echo "Selected MATE..."
-            pacstrap /mnt $mate_packages
+            pacstrap /mnt "$mate_packages"
             mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
@@ -150,8 +155,12 @@ Installer () {
             echo "Done!"
         fi
     fi
-    echo "Setting locale to :" $lang
-    arch-chroot /mnt localectl set-locale LANG=$lang
+
+    echo "Change the locale settings!"
+    nano /mnt/etc/locale.conf
+    nano /mnt/etc/locale.gen
+    echo "Generating locale..."
+    locale-gen
     echo "Done!"
     clear
     echo "Installation complete! please reboot your computer with systemctl reboot or init 6"
