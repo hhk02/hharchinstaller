@@ -2,7 +2,12 @@
 
 # My own Arch Linux Installer in bash (EFI Only)
 
-`pacman -Sy´
-´wget bit.ly/3UNIJLx ´
-´chmod +x hharchinstaller´
-´./hharchinstaller´
+# Download the script
+``wget bit.ly/3UNIJLx``
+
+# Assign the permissions
+`` chmod +x hharchinstaller ``
+
+# Run it
+
+``./hharchinstaller``
