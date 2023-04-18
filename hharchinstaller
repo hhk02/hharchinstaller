@@ -1,6 +1,6 @@
 #!/bin/bash
 
-base_packages="base base-devel linux linux-headers linux-firmware grub sudo nano networkmanager ufw iwd efibootmgr"
+base_packages="base base-devel linux linux-headers linux-firmware grub-btrfs sudo nano networkmanager ufw iwd efibootmgr"
 kde_packages="plasma-meta plasma-wayland-session pulseaudio sddm network-manager-applet xorg konsole"
 gnome_packages="gnome pulseaudio gdm network-manager-applet xorg gnome-terminal"
 xfce_packages="lightdm lightdm-gtk-greeter xfce4 network-manager-applet xorg"
