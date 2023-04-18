@@ -103,13 +103,14 @@ Installer () {
         echo "$hostname" > /mnt/etc/hostname
         echo "Done!"
     fi
-    read -r -p "Write your timezone" "timezone"
+    read -r -p "Write your timezone" timezone
     if [ -z "$timezone" ]; then
-       read -r -p "Write your timezone" "timezone"
+       read -r -p "Write your timezone" timezone
     else
         echo "Setting timezone to : " "$timezone"
     fi 
-
+    arch-chroot /mnt timedatectl set-timezone "$timezone"
+    echo "Done!"
     read -r -p "What desktop you do want? (kde/gnome/xfce/mate?) if you don't use a desktop put this in blank" desktop
     if [ -z "$desktop" ]; then
         echo "Using WITHOUT desktop"
