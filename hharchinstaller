@@ -12,7 +12,7 @@ timezone="Europe/Madrid"
 hostname="arch"
 username="user"
 sudoer="Y"
-desktop="kde"
+desktop=""
 
 Installer () {
     echo "Welcome to the Arch Linux Installer by hhk02!"
@@ -64,7 +64,7 @@ Installer () {
     arch-chroot /mnt passwd root
     echo "Done!"
     echo "Adding a non-root user...."
-    read -r -p "Name of the user: " "username"
+    read -r -p "Name of the user: " username
 
     if [ -z "$username" ]; then
         echo "Please specify a username!"
@@ -76,10 +76,10 @@ Installer () {
     echo "Now the password:"
     arch-chroot /mnt passwd "$username"
     echo "Done"
-    read -r -p "You need this user make a sudoer? (Y/N)" "sudoer"
+    read -r -p "You need this user make a sudoer? (Y/N)" sudoer
 
     if [ -z "$sudoer" ]; then
-        read -r -p "You need this user make a sudoer? (Y/N)" "sudoer"
+        read -r -p "You need this user make a sudoer? (Y/N)" sudoer
     fi
 
     if [ "$sudoer" = "Y" ]; then
@@ -92,7 +92,7 @@ Installer () {
         echo "Done!"
     fi
 
-    read -r -p "Write the hostname: default: arch " "hostname"
+    read -r -p "Write the hostname: default: arch " hostname
 
     if [ -z "$hostname" ]; then
         echo "Using the default value!"
@@ -110,9 +110,14 @@ Installer () {
         echo "Setting timezone to : " "$timezone"
     fi 
 
-    read -r -p "What desktop you do want? (kde/gnome/xfce/mate?)" "desktop"
+    read -r -p "What desktop you do want? (kde/gnome/xfce/mate?) if you don't use a desktop put this in blank" desktop
     if [ -z "$desktop" ]; then
-        echo "Using the default value!"
+        echo "Using WITHOUT desktop"
+        mkinitcpio -p linux
+        echo "Enabling systemd pd: he ahi la importancia de systemd :v"
+        arch-chroot /mnt systemd-firstboot
+        arch-chroot /mnt systemctl enable NetworkManager
+        echo "Done!"
     else
         if [ "$desktop" = "kde" ]; then
             echo "Selected KDE..."
