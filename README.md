@@ -1,4 +1,4 @@
 # hharchinstaller
 
-# My own Arch Linux Installer in bash
+# My own Arch Linux Installer in bash (EFI Only)
 
