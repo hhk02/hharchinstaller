@@ -1,7 +1,7 @@
 #!/bin/bash
 
 base_packages="base base-devel linux linux-headers linux-firmware zram-generator grub-btrfs sudo nano networkmanager ufw iwd efibootmgr"
-kde_packages="plasma-meta plasma-wayland-session pulseaudio sddm network-manager-applet xorg konsole"
+kde_packages="plasma plasma-wayland-session pulseaudio sddm network-manager-applet xorg konsole"
 gnome_packages="gnome pulseaudio gdm network-manager-applet xorg gnome-terminal"
 xfce_packages="lightdm lightdm-gtk-greeter xfce4 network-manager-applet xorg"
 mate_packages="lightdm lightdm-gtk-greeter mate network-manager-applet xorg mate-terminal"
@@ -45,13 +45,13 @@ Installer () {
     fi
     clear
     echo "Mounting necessary partitions!"
-    mkdir -p /mnt/boot
+    mkdir /mnt/boot
+    mount "$efi" /mnt/boot
     mount "$root" /mnt
-    arch-chroot /mnt mount "$efi" /boot
     echo "Done!"
     clear
     echo "Installing base packages...."
-   
+    arch-chroot /mnt mount "$efi" /boot
     pacstrap /mnt $base_packages
     echo "Generating fstab...."
     genfstab -U /mnt > /mnt/etc/fstab
