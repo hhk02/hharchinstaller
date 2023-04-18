@@ -47,6 +47,7 @@ Installer () {
     echo "Mounting necessary partitions!"
     mkdir -p /mnt/boot
     mount "$root" /mnt
+    arch-chroot /mnt mount "$efi" /boot
     echo "Done!"
     clear
     echo "Installing base packages...."
@@ -55,7 +56,6 @@ Installer () {
     echo "Generating fstab...."
     genfstab -U /mnt > /mnt/etc/fstab
     echo "Done!"
-    arch-chroot /mnt mount "$efi" /boot
     echo "Installing bootloader"
     arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot
     arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
