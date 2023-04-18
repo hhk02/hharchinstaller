@@ -10,8 +10,8 @@ root=""
 efi=""
 timezone="Europe/Madrid"
 hostname="arch"
-username="user"
-sudoer="Y"
+username=""
+sudoer=""
 desktop=""
 
 Installer () {
@@ -116,6 +116,7 @@ Installer () {
         mkinitcpio -p linux
         echo "Enabling systemd pd: he ahi la importancia de systemd :v"
         arch-chroot /mnt systemd-firstboot
+        arch-chroot /mnt systemctl enable ufw
         arch-chroot /mnt systemctl enable NetworkManager
         echo "Done!"
     else
@@ -126,6 +127,7 @@ Installer () {
             echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
             arch-chroot /mnt systemctl enable NetworkManager
+            arch-chroot /mnt systemctl enable ufw
             arch-chroot /mnt systemctl enable sddm
             echo "Done!"
         fi
@@ -135,6 +137,7 @@ Installer () {
             mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
+            arch-chroot /mnt systemctl enable ufw
             arch-chroot /mnt systemctl enable NetworkManager
             arch-chroot /mnt systemctl enable gdm
             echo "Done!"
@@ -145,6 +148,7 @@ Installer () {
             mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
+            arch-chroot /mnt systemctl enable ufw
             arch-chroot /mnt systemctl enable NetworkManager
             arch-chroot /mnt systemctl enable lightdm
             echo "Done!"
@@ -155,6 +159,7 @@ Installer () {
             mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
+            arch-chroot /mnt systemctl enable ufw
             arch-chroot /mnt systemctl enable NetworkManager
             arch-chroot /mnt systemctl enable lightdm
             echo "Done!"
