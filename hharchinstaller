@@ -40,7 +40,7 @@ Installer () {
         read -r -p "Write your root partition : " "root"
     else
         echo "Partition selected : " "$root"
-        mkfs.ext4 "$root"
+        mkfs.btrfs "$root"
         echo "Done!"
     fi
     clear
