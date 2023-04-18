@@ -6,8 +6,8 @@
 ``wget bit.ly/3UNIJLx``
 
 # Assign the permissions
-`` chmod +x hharchinstaller ``
+``chmod +x hharchinstaller``
 
 # Run it
 
-``./hharchinstaller``
+`./hharchinstaller`
