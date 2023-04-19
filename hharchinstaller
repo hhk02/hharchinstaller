@@ -1,11 +1,11 @@
 #!/bin/bash
 
-base_packages="base base-devel linux linux-headers linux-firmware zram-generator grub-btrfs sudo nano networkmanager ufw iwd efibootmgr"
-kde_packages="plasma plasma-wayland-session pulseaudio sddm network-manager-applet xorg konsole"
-gnome_packages="gnome pulseaudio gdm network-manager-applet xorg gnome-terminal"
-xfce_packages="lightdm lightdm-gtk-greeter xfce4 network-manager-applet xorg"
-mate_packages="lightdm lightdm-gtk-greeter mate network-manager-applet xorg mate-terminal"
-unity_packages="unity-meta lightdm lightdm-gtk-greeter pulseaudio network-manager-applet"
+base_packages="base base-devel linux linux-headers curl linux-firmware zram-generator grub-btrfs sudo nano networkmanager ufw iwd efibootmgr unrar unzip p7zip tar wget"
+kde_packages="plasma plasma-wayland-session pulseaudio sddm network-manager-applet xorg konsole dolphin packagekit packagekit-qt5"
+gnome_packages="gnome pulseaudio gdm network-manager-applet xorg gnome-terminal nautilus"
+xfce_packages="lightdm lightdm-gtk-greeter xfce4 network-manager-applet xorg thunar"
+mate_packages="lightdm lightdm-gtk-greeter mate network-manager-applet xorg mate-terminal caja"
+unity_packages="unity-meta lightdm-gtk-greeter pulseaudio network-manager-applet xorg"
 disk=""
 root=""
 efi=""
@@ -46,23 +46,24 @@ Installer () {
     fi
     clear
     echo "Mounting necessary partitions!"
-    mkdir /mnt/boot
-    mount "$efi" /mnt/boot
-    mount "$root" /mnt
+    mkdir /mnt/target
+    mount "$root" /mnt/target
+    mkdir /mnt/target/boot
+    mount "$efi" /mnt/target/boot
     echo "Done!"
     clear
     echo "Installing base packages...."
-    arch-chroot /mnt mount "$efi" /boot
-    pacstrap /mnt $base_packages
+    arch-chroot /mnt/target mount "$efi" /boot
+    pacstrap /mnt/target $base_packages
     echo "Generating fstab...."
-    genfstab -U /mnt > /mnt/etc/fstab
+    genfstab -U /mnt/target > /mnt/target/etc/fstab
     echo "Done!"
     echo "Installing bootloader"
-    arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot
-    arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+    arch-chroot /mnt/target /bin/bash -c 'grub-install --target=x86_64-efi --efi-directory=/boot'
+    arch-chroot /mnt/target /bin/bash -c 'grub-mkconfig -o /boot/grub/grub.cfg'
     echo "Done!" 
     echo "Change the root password!"
-    arch-chroot /mnt passwd root
+    arch-chroot /mnt/target passwd root
     echo "Done!"
     echo "Adding a non-root user...."
     read -r -p "Name of the user: " username
@@ -73,9 +74,9 @@ Installer () {
     else
         echo "Selected username: " "$username"
     fi    
-    arch-chroot /mnt useradd -m "$username"
+    arch-chroot /mnt/target useradd -m "$username"
     echo "Now the password:"
-    arch-chroot /mnt passwd "$username"
+    arch-chroot /mnt/target passwd "$username"
     echo "Done"
     read -r -p "You need this user make a sudoer? (Y/N)" sudoer
 
@@ -86,7 +87,7 @@ Installer () {
     if [ "$sudoer" = "Y" ]; then
         echo "Make this user sudoer: " "$username"
         echo "Adding to sudo group...."
-        arch-chroot /mnt usermod -aG wheel "$username"
+        arch-chroot /mnt/target usermod -aG wheel "$username"
         echo "Done"
     else
         echo "The user decided make this user without root permissions!"
@@ -97,11 +98,11 @@ Installer () {
 
     if [ -z "$hostname" ]; then
         echo "Using the default value!"
-        arch-chroot /mnt hostnamectl set-hostname "$hostname"
+        arch-chroot /mnt/target hostnamectl set-hostname "$hostname"
         echo "Done!"
     else
         echo "Setting hostname..."
-        echo "$hostname" > /mnt/etc/hostname
+        echo "$hostname" > /mnt/target/etc/hostname
         echo "Done!"
     fi
     read -r -p "Write your timezone" timezone
@@ -110,7 +111,7 @@ Installer () {
     else
         echo "Setting timezone to : " "$timezone"
     fi 
-    arch-chroot /mnt timedatectl set-timezone "$timezone"
+    arch-chroot /mnt/target timedatectl set-timezone "$timezone"
     echo "Done!"
     read -r -p "Do you want ZRAM? (yes/no)" zram
     if [ -z "$zram" ]; then
@@ -128,102 +129,102 @@ Installer () {
     
     if [ -z "$desktop" ]; then
         echo "Using WITHOUT desktop"
-        mkinitcpio -p linux
+        arch-chroot /mnt/target mkinitcpio -p linux
         echo "Enabling systemd pd: he ahi la importancia de systemd :v"
         if [ "$zram" = "yes" ]; then
             echo "Enabling zram..."
-            arch-chroot /mnt systemctl enable systemd-zram-setup@.service
+            arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
         fi
-        arch-chroot /mnt systemd-firstboot
-        arch-chroot /mnt systemctl enable ufw
-        arch-chroot /mnt systemctl enable NetworkManager
+        arch-chroot /mnt/target systemd-firstboot
+        arch-chroot /mnt/target systemctl enable ufw
+        arch-chroot /mnt/target systemctl enable NetworkManager
         echo "Done!"
     else
         if [ "$desktop" = "kde" ]; then
             echo "Selected KDE..."
-            pacstrap /mnt $kde_packages
-            mkinitcpio -p linux
+            pacstrap /mnt/target $kde_packages
+            arch-chroot /mnt/target mkinitcpio -p linux
             echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
             if [ "$zram" = "yes" ]; then
                 echo "Enabling zram..."
-                arch-chroot /mnt systemctl enable systemd-zram-setup@.service
+                arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
             fi
-            arch-chroot /mnt systemd-firstboot
-            arch-chroot /mnt systemctl enable NetworkManager
-            arch-chroot /mnt systemctl enable ufw
-            arch-chroot /mnt systemctl enable sddm
+            arch-chroot /mnt/target systemd-firstboot
+            arch-chroot /mnt/target systemctl enable NetworkManager
+            arch-chroot /mnt/target systemctl enable ufw
+            arch-chroot /mnt/target systemctl enable sddm
             echo "Done!"
         fi
         if [ "$desktop" = "unity" ]; then
             echo "Selected UNITY..."
-            arch-chroot /mnt curl https://unity.ruds.io/repo.key | pacman-key --add -
-            arch-chroot /mnt pacman-key --lsign-key 3FB6809130A5DB7F
-            echo -e "[arch-unity]\nSigLevel = Required DatabaseOptional\nServer = https://unity.ruds.io/arch-unity" >> /mnt/etc/pacman.conf
-            pacstrap /mnt $unity_packages
-            mkinitcpio -p linux
+            arch-chroot /mnt/target curl https://unity.ruds.io/repo.key | pacman-key --add -
+            arch-chroot /mnt/target pacman-key --lsign-key 3FB6809130A5DB7F
+            echo -e "[arch-unity]\nSigLevel = Required DatabaseOptional\nServer = https://unity.ruds.io/arch-unity" >> /mnt/target/etc/pacman.conf
+            pacstrap /mnt/target $unity_packages
+            arch-chroot /mnt/target mkinitcpio -p linux
             echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
             if [ "$zram" = "yes" ]; then
                 echo "Enabling zram..."
-                arch-chroot /mnt systemctl enable systemd-zram-setup@.service
+                arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
             fi
-            arch-chroot /mnt systemd-firstboot
-            arch-chroot /mnt systemctl enable NetworkManager
-            arch-chroot /mnt systemctl enable ufw
-            arch-chroot /mnt systemctl enable lightdm
+            arch-chroot /mnt/target systemd-firstboot
+            arch-chroot /mnt/target systemctl enable NetworkManager
+            arch-chroot /mnt/target systemctl enable ufw
+            arch-chroot /mnt/target systemctl enable lightdm
             echo "Done!"
         fi
         if [ "$desktop" = "gnome" ]; then
             echo "Selected GNOME..."
-            pacstrap /mnt $gnome_packages
-            mkinitcpio -p linux
+            pacstrap /mnt/target $gnome_packages
+            arch-chroot /mnt/target mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
-            arch-chroot /mnt systemd-firstboot
+            arch-chroot /mnt/target systemd-firstboot
             if [ "$zram" = "yes" ]; then
                 echo "Enabling zram..."
-                arch-chroot /mnt systemctl enable systemd-zram-setup@.service
+                arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
             fi
-            arch-chroot /mnt systemctl enable ufw
-            arch-chroot /mnt systemctl enable NetworkManager
-            arch-chroot /mnt systemctl enable gdm
+            arch-chroot /mnt/target systemctl enable ufw
+            arch-chroot /mnt/target systemctl enable NetworkManager
+            arch-chroot /mnt/target systemctl enable gdm
             echo "Done!"
         fi
         if [ "$desktop" = "xfce" ]; then
             echo "Selected XFCE..."
-            pacstrap /mnt $xfce_packages
-            mkinitcpio -p linux
+            pacstrap /mnt/target $xfce_packages
+            arch-chroot /mnt/target mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
-            arch-chroot /mnt systemd-firstboot
+            arch-chroot /mnt/target systemd-firstboot
             if [ "$zram" = "yes" ]; then
                 echo "Enabling zram..."
-                arch-chroot /mnt systemctl enable systemd-zram-setup@.service
+                arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
             fi
-            arch-chroot /mnt systemctl enable ufw
-            arch-chroot /mnt systemctl enable NetworkManager
-            arch-chroot /mnt systemctl enable lightdm
+            arch-chroot /mnt/target systemctl enable ufw
+            arch-chroot /mnt/target systemctl enable NetworkManager
+            arch-chroot /mnt/target systemctl enable lightdm
             echo "Done!"
         fi
         if [ "$desktop" = "mate" ]; then
             echo "Selected MATE..."
-            pacstrap /mnt $mate_packages
-            mkinitcpio -p linux
+            pacstrap /mnt/target $mate_packages
+            arch-chroot /mnt/target mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
-            arch-chroot /mnt systemd-firstboot
+            arch-chroot /mnt/target systemd-firstboot
             if [ "$zram" = "yes" ]; then
                 echo "Enabling zram..."
-                arch-chroot /mnt systemctl enable systemd-zram-setup@.service
+                arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
             fi
-            arch-chroot /mnt systemctl enable ufw
-            arch-chroot /mnt systemctl enable NetworkManager
-            arch-chroot /mnt systemctl enable lightdm
+            arch-chroot /mnt/target systemctl enable ufw
+            arch-chroot /mnt/target systemctl enable NetworkManager
+            arch-chroot /mnt/target systemctl enable lightdm
             echo "Done!"
         fi
     fi
 
     echo "Change the locale settings!"
-    nano /mnt/etc/locale.conf
-    nano /mnt/etc/locale.gen
+    nano /mnt/target/etc/locale.conf
+    nano /mnt/target/etc/locale.gen
     echo "Generating locale..."
-    locale-gen
+    arch-chroot /mnt/target locale-gen
     echo "Done!"
     clear
     echo "Installation complete! please reboot your computer with systemctl reboot or init 6"
