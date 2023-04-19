@@ -169,7 +169,7 @@ Installer () {
             arch-chroot /mnt systemd-firstboot
             arch-chroot /mnt systemctl enable NetworkManager
             arch-chroot /mnt systemctl enable ufw
-            arch-chroot /mnt systemctl enable sddm
+            arch-chroot /mnt systemctl enable lightdm
             echo "Done!"
         fi
         if [ "$desktop" = "gnome" ]; then
