@@ -41,7 +41,7 @@ Installer () {
         read -r -p "Write your root partition : " "root"
     else
         echo "Partition selected : " "$root"
-        mkfs.btrfs "$root"
+        mkfs.btrfs -f "$root"
         echo "Done!"
     fi
     clear
@@ -53,7 +53,7 @@ Installer () {
     clear
     echo "Installing base packages...."
     arch-chroot /mnt mount "$efi" /boot
-    pacstrap /mnt "$base_packages"
+    pacstrap /mnt $base_packages
     echo "Generating fstab...."
     genfstab -U /mnt > /mnt/etc/fstab
     echo "Done!"
@@ -141,7 +141,7 @@ Installer () {
     else
         if [ "$desktop" = "kde" ]; then
             echo "Selected KDE..."
-            pacstrap /mnt "$kde_packages"
+            pacstrap /mnt $kde_packages
             mkinitcpio -p linux
             echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
             if [ "$zram" = "yes" ]; then
@@ -159,7 +159,7 @@ Installer () {
             arch-chroot /mnt curl https://unity.ruds.io/repo.key | pacman-key --add -
             arch-chroot /mnt pacman-key --lsign-key 3FB6809130A5DB7F
             echo -e "[arch-unity]\nSigLevel = Required DatabaseOptional\nServer = https://unity.ruds.io/arch-unity" >> /mnt/etc/pacman.conf
-            pacstrap /mnt "$unity_packages"
+            pacstrap /mnt $unity_packages
             mkinitcpio -p linux
             echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
             if [ "$zram" = "yes" ]; then
@@ -174,7 +174,7 @@ Installer () {
         fi
         if [ "$desktop" = "gnome" ]; then
             echo "Selected GNOME..."
-            pacstrap /mnt "$gnome_packages"
+            pacstrap /mnt $gnome_packages
             mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
@@ -189,7 +189,7 @@ Installer () {
         fi
         if [ "$desktop" = "xfce" ]; then
             echo "Selected XFCE..."
-            pacstrap /mnt "$xfce_packages"
+            pacstrap /mnt $xfce_packages
             mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
@@ -204,7 +204,7 @@ Installer () {
         fi
         if [ "$desktop" = "mate" ]; then
             echo "Selected MATE..."
-            pacstrap /mnt "$mate_packages"
+            pacstrap /mnt $mate_packages
             mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt systemd-firstboot
