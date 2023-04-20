@@ -16,188 +16,184 @@ sudoer=""
 desktop=""
 
 Installer () {
-    echo "Welcome to the Arch Linux Installer by hhk02!"
-    lsblk
-    read -r -p "Write your disk : " disk
-    if [ -z "$disk" ]; then
-        echo "Please specify a disk!"
+    if [ -d /sys/firmware/efi ]; then
+        echo "Welcome to the Arch Linux Installer by hhk02!"
+        lsblk
         read -r -p "Write your disk : " disk
-    else
-        echo "Disk selected : " "$disk"
-        fdisk "$disk"
-    fi
-    read -r -p "Please specify your EFI paritition :" efi
-    if [ -z "$efi" ]; then
-        echo "Please specify the efi!"
-        read -r -p "Write your efi partition : " efi
-    else
-        echo "Partition selected : " "$efi"
-        mkfs.vfat -F 32 "$efi"
+        if [ -z "$disk" ]; then
+            echo "Please specify a disk!"
+            read -r -p "Write your disk : " disk
+        else
+            echo "Disk selected : " "$disk"
+            fdisk "$disk"
+        fi
+        read -r -p "Please specify your EFI paritition :" efi
+        if [ -z "$efi" ]; then
+            echo "Please specify the efi!"
+            read -r -p "Write your efi partition : " efi
+        else
+            echo "Partition selected : " "$efi"
+            mkfs.vfat -F 32 "$efi"
+            echo "Done!"
+        fi
+        read -r -p "Please specify your root paritition : " "root"
+        if [ -z "$root" ]; then
+            echo "Please specify the root partition!"
+            read -r -p "Write your root partition : " "root"
+        else
+            echo "Partition selected : " "$root"
+            mkfs.btrfs -f "$root"
+            echo "Done!"
+        fi
+        clear
+        echo "Mounting necessary partitions!"
+        mkdir /mnt/target
+        mount "$root" /mnt/target
+        mkdir /mnt/target/boot
+        mount "$efi" /mnt/target/boot
         echo "Done!"
-    fi
-    read -r -p "Please specify your root paritition : " "root"
-    if [ -z "$root" ]; then
-        echo "Please specify the root partition!"
-        read -r -p "Write your root partition : " "root"
-    else
-        echo "Partition selected : " "$root"
-        mkfs.btrfs -f "$root"
+        clear
+        echo "Installing base packages...."
+        arch-chroot /mnt/target mount "$efi" /boot
+        pacstrap /mnt/target $base_packages
+        echo "Generating fstab...."
+        genfstab -U /mnt/target > /mnt/target/etc/fstab
         echo "Done!"
-    fi
-    clear
-    echo "Mounting necessary partitions!"
-    mkdir /mnt/target
-    mount "$root" /mnt/target
-    mkdir /mnt/target/boot
-    mount "$efi" /mnt/target/boot
-    echo "Done!"
-    clear
-    echo "Installing base packages...."
-    arch-chroot /mnt/target mount "$efi" /boot
-    pacstrap /mnt/target $base_packages
-    echo "Generating fstab...."
-    genfstab -U /mnt/target > /mnt/target/etc/fstab
-    echo "Done!"
-    echo "Installing bootloader"
-    arch-chroot /mnt/target /bin/bash -c 'grub-install --target=x86_64-efi --efi-directory=/boot'
-    arch-chroot /mnt/target /bin/bash -c 'grub-mkconfig -o /boot/grub/grub.cfg'
-    echo "Done!" 
-    echo "Change the root password!"
-    arch-chroot /mnt/target passwd root
-    echo "Done!"
-    echo "Adding a non-root user...."
-    read -r -p "Name of the user: " username
-
-    if [ -z "$username" ]; then
-        echo "Please specify a username!"
+        echo "Installing bootloader"
+        arch-chroot /mnt/target /bin/bash -c 'grub-install --target=x86_64-efi --efi-directory=/boot'
+        arch-chroot /mnt/target /bin/bash -c 'grub-mkconfig -o /boot/grub/grub.cfg'
+        echo "Done!" 
+        echo "Change the root password!"
+        arch-chroot /mnt/target passwd root
+        echo "Done!"
+        echo "Adding a non-root user...."
         read -r -p "Name of the user: " username
-    else
-        echo "Selected username: " "$username"
-    fi    
-    arch-chroot /mnt/target useradd -m "$username"
-    echo "Now the password:"
-    arch-chroot /mnt/target passwd "$username"
-    echo "Done"
-    read -r -p "You need this user make a sudoer? (Y/N)" sudoer
 
-    if [ -z "$sudoer" ]; then
-        read -r -p "You need this user make a sudoer? (Y/N)" sudoer
-    fi
-
-    if [ "$sudoer" = "Y" ]; then
-        echo "Make this user sudoer: " "$username"
-        echo "Adding to sudo group...."
-        arch-chroot /mnt/target usermod -aG wheel "$username"
+        if [ -z "$username" ]; then
+            echo "Please specify a username!"
+            read -r -p "Name of the user: " username
+        else
+            echo "Selected username: " "$username"
+        fi    
+        arch-chroot /mnt/target useradd -m "$username"
+        echo "Now the password:"
+        arch-chroot /mnt/target passwd "$username"
         echo "Done"
-    else
-        echo "The user decided make this user without root permissions!"
-        echo "Done!"
-    fi
+        read -r -p "You need this user make a sudoer? (Y/N)" sudoer
 
-    read -r -p "Write the hostname: default: arch " hostname
-
-    if [ -z "$hostname" ]; then
-        echo "Using the default value!"
-        arch-chroot /mnt/target hostnamectl set-hostname "$hostname"
-        echo "Done!"
-    else
-        echo "Setting hostname..."
-        echo "$hostname" > /mnt/target/etc/hostname
-        echo "Done!"
-    fi
-    read -r -p "Write your timezone" timezone
-    if [ -z "$timezone" ]; then
-       read -r -p "Write your timezone" timezone
-    else
-        echo "Setting timezone to : " "$timezone"
-    fi 
-    arch-chroot /mnt/target timedatectl set-timezone "$timezone"
-    echo "Done!"
-    read -r -p "What desktop you do want? (kde/gnome/xfce/mate?) if you don't use a desktop put this in blank" desktop
-    
-    
-    
-    if [ -z "$desktop" ]; then
-        echo "Using WITHOUT desktop"
-        arch-chroot /mnt/target mkinitcpio -p linux
-        echo "Enabling systemd pd: he ahi la importancia de systemd :v"
-        if [ "$zram" = "yes" ]; then
-            echo "Enabling zram..."
-            arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
+        if [ -z "$sudoer" ]; then
+            read -r -p "You need this user make a sudoer? (Y/N)" sudoer
         fi
-        arch-chroot /mnt/target systemd-firstboot
-        arch-chroot /mnt/target systemctl enable ufw
-        arch-chroot /mnt/target systemctl enable NetworkManager
-        echo "Done!"
-    else
-        if [ "$desktop" = "kde" ]; then
-            echo "Selected KDE..."
-            pacstrap /mnt/target $kde_packages
-            arch-chroot /mnt/target mkinitcpio -p linux
-            echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
-            arch-chroot /mnt/target systemd-firstboot
-            arch-chroot /mnt/target systemctl enable NetworkManager
-            arch-chroot /mnt/target systemctl enable ufw
-            arch-chroot /mnt/target systemctl enable sddm
+
+        if [ "$sudoer" = "Y" ]; then
+            echo "Make this user sudoer: " "$username"
+            echo "Adding to sudo group...."
+            arch-chroot /mnt/target usermod -aG wheel "$username"
+            echo "Done"
+        else
+            echo "The user decided make this user without root permissions!"
             echo "Done!"
         fi
-        if [ "$desktop" = "unity" ]; then
-            echo "Selected UNITY..."
-            arch-chroot /mnt/target curl https://unity.ruds.io/repo.key | pacman-key --add -
-            arch-chroot /mnt/target pacman-key --lsign-key 3FB6809130A5DB7F
-            echo -e "[arch-unity]\nSigLevel = Required DatabaseOptional\nServer = https://unity.ruds.io/arch-unity" >> /mnt/target/etc/pacman.conf
-            pacstrap /mnt/target $unity_packages
-            arch-chroot /mnt/target mkinitcpio -p linux
-            echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
-            arch-chroot /mnt/target systemd-firstboot
-            arch-chroot /mnt/target systemctl enable NetworkManager
-            arch-chroot /mnt/target systemctl enable ufw
-            arch-chroot /mnt/target systemctl enable lightdm
+
+        read -r -p "Write the hostname: default: arch " hostname
+
+        if [ -z "$hostname" ]; then
+            echo "Using the default value!"
+            arch-chroot /mnt/target hostnamectl set-hostname "$hostname"
+            echo "Done!"
+        else
+            echo "Setting hostname..."
+            echo "$hostname" > /mnt/target/etc/hostname
             echo "Done!"
         fi
-        if [ "$desktop" = "gnome" ]; then
-            echo "Selected GNOME..."
-            pacstrap /mnt/target $gnome_packages
+        read -r -p "Write your timezone" timezone
+        if [ -z "$timezone" ]; then
+            read -r -p "Write your timezone" timezone
+        else
+            echo "Setting timezone to : " "$timezone"
+        fi 
+        arch-chroot /mnt/target timedatectl set-timezone "$timezone"
+        echo "Done!"
+        read -r -p "What desktop you do want? (kde/gnome/xfce/mate?) if you don't use a desktop put this in blank" desktop
+        if [ -z "$desktop" ]; then
+            echo "Using WITHOUT desktop"
             arch-chroot /mnt/target mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt/target systemd-firstboot
             arch-chroot /mnt/target systemctl enable ufw
             arch-chroot /mnt/target systemctl enable NetworkManager
-            arch-chroot /mnt/target systemctl enable gdm
             echo "Done!"
+        else
+            if [ "$desktop" = "kde" ]; then
+                echo "Selected KDE..."
+                pacstrap /mnt/target $kde_packages
+                arch-chroot /mnt/target mkinitcpio -p linux
+                echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
+                arch-chroot /mnt/target systemd-firstboot
+                arch-chroot /mnt/target systemctl enable NetworkManager
+                arch-chroot /mnt/target systemctl enable ufw
+                arch-chroot /mnt/target systemctl enable sddm
+                echo "Done!"
+            fi
+            if [ "$desktop" = "unity" ]; then
+                echo "Selected UNITY..."
+                arch-chroot /mnt/target curl https://unity.ruds.io/repo.key | pacman-key --add -
+                arch-chroot /mnt/target pacman-key --lsign-key 3FB6809130A5DB7F
+                echo -e "[arch-unity]\nSigLevel = Required DatabaseOptional\nServer = https://unity.ruds.io/arch-unity" >> /mnt/target/etc/pacman.conf
+                pacstrap /mnt/target $unity_packages
+                arch-chroot /mnt/target mkinitcpio -p linux
+                echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
+                arch-chroot /mnt/target systemd-firstboot
+                arch-chroot /mnt/target systemctl enable NetworkManager
+                arch-chroot /mnt/target systemctl enable ufw
+                arch-chroot /mnt/target systemctl enable lightdm
+                echo "Done!"
+            fi
+            if [ "$desktop" = "gnome" ]; then
+                echo "Selected GNOME..."
+                pacstrap /mnt/target $gnome_packages
+                arch-chroot /mnt/target mkinitcpio -p linux
+                echo "Enabling systemd pd: he ahi la importancia de systemd :v"
+                arch-chroot /mnt/target systemd-firstboot
+                arch-chroot /mnt/target systemctl enable ufw
+                arch-chroot /mnt/target systemctl enable NetworkManager
+                arch-chroot /mnt/target systemctl enable gdm
+                echo "Done!"
+            fi
+            if [ "$desktop" = "xfce" ]; then
+                echo "Selected XFCE..."
+                pacstrap /mnt/target $xfce_packages
+                arch-chroot /mnt/target mkinitcpio -p linux
+                echo "Enabling systemd pd: he ahi la importancia de systemd :v"
+                arch-chroot /mnt/target systemd-firstboot
+                arch-chroot /mnt/target systemctl enable ufw
+                arch-chroot /mnt/target systemctl enable NetworkManager
+                arch-chroot /mnt/target systemctl enable lightdm
+                echo "Done!"
+            fi
+            if [ "$desktop" = "mate" ]; then
+                echo "Selected MATE..."
+                pacstrap /mnt/target $mate_packages
+                arch-chroot /mnt/target mkinitcpio -p linux
+                echo "Enabling systemd pd: he ahi la importancia de systemd :v"
+                arch-chroot /mnt/target systemd-firstboot
+                arch-chroot /mnt/target systemctl enable ufw
+                arch-chroot /mnt/target systemctl enable NetworkManager
+                arch-chroot /mnt/target systemctl enable lightdm
+                echo "Done!"
+            fi
         fi
-        if [ "$desktop" = "xfce" ]; then
-            echo "Selected XFCE..."
-            pacstrap /mnt/target $xfce_packages
-            arch-chroot /mnt/target mkinitcpio -p linux
-            echo "Enabling systemd pd: he ahi la importancia de systemd :v"
-            arch-chroot /mnt/target systemd-firstboot
-            arch-chroot /mnt/target systemctl enable ufw
-            arch-chroot /mnt/target systemctl enable NetworkManager
-            arch-chroot /mnt/target systemctl enable lightdm
-            echo "Done!"
-        fi
-        if [ "$desktop" = "mate" ]; then
-            echo "Selected MATE..."
-            pacstrap /mnt/target $mate_packages
-            arch-chroot /mnt/target mkinitcpio -p linux
-            echo "Enabling systemd pd: he ahi la importancia de systemd :v"
-            arch-chroot /mnt/target systemd-firstboot
-            arch-chroot /mnt/target systemctl enable ufw
-            arch-chroot /mnt/target systemctl enable NetworkManager
-            arch-chroot /mnt/target systemctl enable lightdm
-            echo "Done!"
-        fi
+        echo "Change the locale settings!"
+        nano /mnt/target/etc/locale.conf
+        nano /mnt/target/etc/locale.gen
+        echo "Generating locale..."
+        arch-chroot /mnt/target locale-gen
+        echo "Done!"
+        clear
+        echo "Installation complete! please reboot your computer with systemctl reboot or init 6"
+    else
+        echo "Legacy boot it's not supported! :("
     fi
-
-    echo "Change the locale settings!"
-    nano /mnt/target/etc/locale.conf
-    nano /mnt/target/etc/locale.gen
-    echo "Generating locale..."
-    arch-chroot /mnt/target locale-gen
-    echo "Done!"
-    clear
-    echo "Installation complete! please reboot your computer with systemctl reboot or init 6"
 }
 
 if [ $EUID -eq 0 ]; then
