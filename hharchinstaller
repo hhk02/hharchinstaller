@@ -14,7 +14,7 @@ hostname="arch"
 username=""
 sudoer=""
 desktop=""
-zram=""
+
 Installer () {
     echo "Welcome to the Arch Linux Installer by hhk02!"
     lsblk
@@ -113,16 +113,6 @@ Installer () {
     fi 
     arch-chroot /mnt/target timedatectl set-timezone "$timezone"
     echo "Done!"
-    read -r -p "Do you want ZRAM? (yes/no)" zram
-    if [ -z "$zram" ]; then
-        echo "ZRam OFF"
-    fi
-    
-    if [ "$zram" = "yes"  ]; then
-        echo "ZRam ON"
-    else
-        echo "ZRAM OFF"
-    fi
     read -r -p "What desktop you do want? (kde/gnome/xfce/mate?) if you don't use a desktop put this in blank" desktop
     
     
@@ -145,10 +135,6 @@ Installer () {
             pacstrap /mnt/target $kde_packages
             arch-chroot /mnt/target mkinitcpio -p linux
             echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
-            if [ "$zram" = "yes" ]; then
-                echo "Enabling zram..."
-                arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
-            fi
             arch-chroot /mnt/target systemd-firstboot
             arch-chroot /mnt/target systemctl enable NetworkManager
             arch-chroot /mnt/target systemctl enable ufw
@@ -163,10 +149,6 @@ Installer () {
             pacstrap /mnt/target $unity_packages
             arch-chroot /mnt/target mkinitcpio -p linux
             echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
-            if [ "$zram" = "yes" ]; then
-                echo "Enabling zram..."
-                arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
-            fi
             arch-chroot /mnt/target systemd-firstboot
             arch-chroot /mnt/target systemctl enable NetworkManager
             arch-chroot /mnt/target systemctl enable ufw
@@ -179,10 +161,6 @@ Installer () {
             arch-chroot /mnt/target mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt/target systemd-firstboot
-            if [ "$zram" = "yes" ]; then
-                echo "Enabling zram..."
-                arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
-            fi
             arch-chroot /mnt/target systemctl enable ufw
             arch-chroot /mnt/target systemctl enable NetworkManager
             arch-chroot /mnt/target systemctl enable gdm
@@ -194,10 +172,6 @@ Installer () {
             arch-chroot /mnt/target mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt/target systemd-firstboot
-            if [ "$zram" = "yes" ]; then
-                echo "Enabling zram..."
-                arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
-            fi
             arch-chroot /mnt/target systemctl enable ufw
             arch-chroot /mnt/target systemctl enable NetworkManager
             arch-chroot /mnt/target systemctl enable lightdm
@@ -209,10 +183,6 @@ Installer () {
             arch-chroot /mnt/target mkinitcpio -p linux
             echo "Enabling systemd pd: he ahi la importancia de systemd :v"
             arch-chroot /mnt/target systemd-firstboot
-            if [ "$zram" = "yes" ]; then
-                echo "Enabling zram..."
-                arch-chroot /mnt/target systemctl enable systemd-zram-setup@.service
-            fi
             arch-chroot /mnt/target systemctl enable ufw
             arch-chroot /mnt/target systemctl enable NetworkManager
             arch-chroot /mnt/target systemctl enable lightdm
