@@ -140,6 +140,7 @@ Installer () {
                 arch-chroot /mnt/target curl https://unity.ruds.io/repo.key | pacman-key --add -
                 arch-chroot /mnt/target pacman-key --lsign-key 3FB6809130A5DB7F
                 echo -e "[arch-unity]\nSigLevel = Required DatabaseOptional\nServer = https://unity.ruds.io/arch-unity" >> /mnt/target/etc/pacman.conf
+                arch-chroot /mnt/target pacman -Sy
                 pacstrap /mnt/target $unity_packages
                 arch-chroot /mnt/target mkinitcpio -p linux
                 echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
