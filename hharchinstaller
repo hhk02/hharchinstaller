@@ -5,7 +5,7 @@ kde_packages="plasma plasma-wayland-session pulseaudio sddm network-manager-appl
 gnome_packages="gnome pulseaudio gdm network-manager-applet xorg gnome-terminal nautilus"
 xfce_packages="lightdm lightdm-gtk-greeter xfce4 network-manager-applet xorg thunar"
 mate_packages="lightdm lightdm-gtk-greeter mate network-manager-applet xorg mate-terminal caja"
-unity_packages="unity-meta lightdm-gtk-greeter pulseaudio network-manager-applet xorg"
+# unity_packages="unity-meta lightdm-gtk-greeter pulseaudio network-manager-applet xorg"
 disk=""
 root=""
 efi=""
@@ -135,21 +135,21 @@ Installer () {
                 arch-chroot /mnt/target systemctl enable sddm
                 echo "Done!"
             fi
-            if [ "$desktop" = "unity" ]; then
-                echo "Selected UNITY..."
-                arch-chroot /mnt/target curl https://unity.ruds.io/repo.key | pacman-key --add -
-                arch-chroot /mnt/target pacman-key --lsign-key 3FB6809130A5DB7F
-                echo -e "[arch-unity]\nSigLevel = Required DatabaseOptional\nServer = https://unity.ruds.io/arch-unity" >> /mnt/target/etc/pacman.conf
-                arch-chroot /mnt/target pacman -Sy
-                pacstrap /mnt/target $unity_packages
-                arch-chroot /mnt/target mkinitcpio -p linux
-                echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
-                arch-chroot /mnt/target systemd-firstboot
-                arch-chroot /mnt/target systemctl enable NetworkManager
-                arch-chroot /mnt/target systemctl enable ufw
-                arch-chroot /mnt/target systemctl enable lightdm
-                echo "Done!"
-            fi
+            #if [ "$desktop" = "unity" ]; then
+             #   echo "Selected UNITY..."
+             #  arch-chroot /mnt/target curl https://unity.ruds.io/repo.key | pacman-key --add -
+             #   arch-chroot /mnt/target pacman-key --lsign-key 3FB6809130A5DB7F
+             #   echo -e "[arch-unity]\nSigLevel = Required DatabaseOptional\nServer = https://unity.ruds.io/arch-unity" >> /mnt/target/etc/pacman.conf
+             #  arch-chroot /mnt/target pacman -Sy
+             #   pacstrap /mnt/target $unity_packages
+             #   arch-chroot /mnt/target mkinitcpio -p linux
+             #   echo "Enabling systemd PD: Eh ahi la importancia de systemd :v"
+             #   arch-chroot /mnt/target systemd-firstboot
+             #   arch-chroot /mnt/target systemctl enable NetworkManager
+             #   arch-chroot /mnt/target systemctl enable ufw
+             #   arch-chroot /mnt/target systemctl enable lightdm
+             #   echo "Done!"
+            #fi
             if [ "$desktop" = "gnome" ]; then
                 echo "Selected GNOME..."
                 pacstrap /mnt/target $gnome_packages
